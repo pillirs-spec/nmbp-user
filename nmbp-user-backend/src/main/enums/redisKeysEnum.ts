@@ -5,4 +5,7 @@ export enum RedisKeys {
   USER_REGISTRATION_OTP_BY_TXNID = "user|registration_otp|txnId:${txnId}",
   USER_REGISTRATION_DATA_BY_TXNID = "user|registration_data|txnId:${txnId}",
   PLEDGES_LIST = "pledges",
+  PLEDGES_COUNT = "pledges|count",
+  PLEDGES_TOTAL_COUNT = "pledges|total_count",
+  PLEDGES_TODAY_TOTAL_COUNT = "pledges|today_total_count",
 }

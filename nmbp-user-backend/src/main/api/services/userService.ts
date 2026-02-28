@@ -3,6 +3,7 @@ import { redisKeysFormatter } from "../../helpers";
 import { RedisKeys, CacheTTL } from "../../enums";
 import { userRepository } from "../repositories";
 import { smsService } from "./smsService";
+import { count } from "console";
 
 interface RegistrationData {
   full_name: string;
@@ -308,9 +309,27 @@ export const userService = {
         {},
       );
 
+      const countKey = redisKeysFormatter.getFormattedRedisKey(
+        RedisKeys.PLEDGES_COUNT,
+        {},
+      );
+
+      const totalCountKey = redisKeysFormatter.getFormattedRedisKey(
+        RedisKeys.PLEDGES_TOTAL_COUNT,
+        {},
+      );
+
+      const todayTotalCountKey = redisKeysFormatter.getFormattedRedisKey(
+        RedisKeys.PLEDGES_TODAY_TOTAL_COUNT,
+        {},
+      );
+
       await redis.deleteRedis(dataKey);
       await redis.deleteRedis(otpKey);
-      await redis.deleteRedisKeyWithPattern(`${redisKey}*`); // Clean up any pledge list cache related to the user
+      await redis.deleteRedisKeyWithPattern(`${redisKey}*`);
+      await redis.deleteRedis(countKey);
+      await redis.deleteRedis(totalCountKey);
+      await redis.deleteRedis(todayTotalCountKey);
 
       logger.info(
         `${logPrefix} :: Session data cleaned up for txnId :: ${txnId}`,
