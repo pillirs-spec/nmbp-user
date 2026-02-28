@@ -1,5 +1,3 @@
-import adminValidations from "./adminValidations";
+import userValidations from "./userValidations";
 
-export {
-    adminValidations
-}
+export { userValidations };

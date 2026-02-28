@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "nmbp-user-backend",
-    "description": "User Backend APIs for the RBAC/UBAC Module. Provides endpoints for logged-in users to view and update their own profile information.",
+    "description": "User service for NMBP application. Handles user registration, login OTP generation and verification. Integrates with SMS gateway for OTP delivery. Uses Redis for OTP storage and management. Designed for high performance and security.",
     "version": "1.0.0"
   },
   "host": "localhost:7004",
@@ -11,10 +11,6 @@
     {
       "name": "Users",
       "description": "User service health check"
-    },
-    {
-      "name": "Admin",
-      "description": "User self-service endpoints - view profile, update profile, and upload profile picture"
     }
   ],
   "schemes": [
@@ -35,29 +31,13 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/user/admin/updateProfilePic": {
-      "post": {
+    "/api/v1/user/health": {
+      "get": {
         "tags": [
-          "Admin"
+          "Users"
         ],
-        "summary": "Upload Profile Picture",
-        "description": "Upload or replace the profile picture for the currently authenticated user. Accepts JPEG/PNG files only. Max file size is configured via EP_UPLOAD_FILE_SIZE_LIMIT (default 5MB).",
-        "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": "JWT token for authentication"
-          },
-          {
-            "name": "file",
-            "in": "formData",
-            "required": true,
-            "type": "file",
-            "description": "Profile picture file to upload"
-          }
-        ],
+        "summary": "Health Check",
+        "description": "Verify that the User Backend service is running and responsive",
         "responses": {
           "default": {
             "description": ""
@@ -65,21 +45,14 @@
         }
       }
     },
-    "/api/v1/user/admin/updateProfile": {
+    "/api/v1/user/loginOtp": {
       "post": {
         "tags": [
-          "Admin"
+          "Users"
         ],
-        "summary": "Update My Profile",
-        "description": "Update the profile details (first name, last name, email, date of birth) of the currently authenticated user",
+        "summary": "Request Registration OTP",
+        "description": "Generate and send a 6-digit OTP to the provided mobile number for registration. OTP is valid for 3 minutes. Returns a txnId to use in verify/resend operations.",
         "parameters": [
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": true,
-            "type": "string",
-            "description": "JWT token for authentication"
-          },
           {
             "name": "body",
             "in": "body",
@@ -87,21 +60,37 @@
             "schema": {
               "type": "object",
               "properties": {
-                "first_name": {
+                "full_name": {
                   "type": "string",
-                  "example": "Narsima"
+                  "example": "John Doe"
                 },
-                "last_name": {
-                  "type": "string",
-                  "example": "Chilkuri"
+                "age": {
+                  "type": "number",
+                  "example": 30
                 },
-                "email_id": {
-                  "type": "string",
-                  "example": "narsimachilkuri237@gmail.com"
+                "gender": {
+                  "type": "number",
+                  "example": 1
                 },
-                "dob": {
+                "pincode": {
                   "type": "string",
-                  "example": "1997-08-16"
+                  "example": "560001"
+                },
+                "district": {
+                  "type": "number",
+                  "example": 1
+                },
+                "state": {
+                  "type": "number",
+                  "example": 1
+                },
+                "mobile_number": {
+                  "type": "string",
+                  "example": "8169104556"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "pillirajesh@ymail.com"
                 }
               }
             }
@@ -114,20 +103,27 @@
         }
       }
     },
-    "/api/v1/user/admin/loggedUserInfo": {
-      "get": {
+    "/api/v1/user/resendOTP": {
+      "post": {
         "tags": [
-          "Admin"
+          "Users"
         ],
-        "summary": "Get Logged-In User Info",
-        "description": "Retrieve the profile details (name, email, mobile, role, profile picture URL) of the currently authenticated user using the JWT token",
+        "summary": "Resend Registration OTP",
+        "description": "Resend OTP for registration. Old OTP is invalidated immediately. New OTP is valid for 3 minutes. Maximum 3 resend attempts allowed.",
         "parameters": [
           {
-            "name": "Authorization",
-            "in": "header",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string",
-            "description": "JWT token for authentication"
+            "schema": {
+              "type": "object",
+              "properties": {
+                "txnId": {
+                  "type": "string",
+                  "example": "uuid-string"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -137,13 +133,33 @@
         }
       }
     },
-    "/api/v1/user/health": {
-      "get": {
+    "/api/v1/user/verifyOTP": {
+      "post": {
         "tags": [
           "Users"
         ],
-        "summary": "Health Check",
-        "description": "Verify that the User Backend service is running and responsive",
+        "summary": "Verify Registration OTP",
+        "description": "Verify the OTP sent to the mobile number. After successful verification, user will be created in the database and all session data will be deleted from Redis.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "txnId": {
+                  "type": "string",
+                  "example": "uuid-string"
+                },
+                "otp": {
+                  "type": "string",
+                  "example": "123456"
+                }
+              }
+            }
+          }
+        ],
         "responses": {
           "default": {
             "description": ""

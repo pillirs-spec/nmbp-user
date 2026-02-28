@@ -8,7 +8,7 @@ const doc = {
   info: {
     title: moduleName,
     description:
-      "User Backend APIs for the RBAC/UBAC Module. Provides endpoints for logged-in users to view and update their own profile information.",
+      "User service for NMBP application. Handles user registration, login OTP generation and verification. Integrates with SMS gateway for OTP delivery. Uses Redis for OTP storage and management. Designed for high performance and security.",
     version: "1.0.0",
   },
   basePath: "/",
@@ -16,14 +16,7 @@ const doc = {
   schemes: [scheme],
   consumes: ["application/json"],
   produces: ["application/json"],
-  tags: [
-    { name: "Users", description: "User service health check" },
-    {
-      name: "Admin",
-      description:
-        "User self-service endpoints - view profile, update profile, and upload profile picture",
-    },
-  ],
+  tags: [{ name: "Users", description: "User service health check" }],
   securityDefinitions: {
     Bearer: {
       type: "apiKey",

@@ -1,48 +1,19 @@
 export enum UserQueries {
-  GET_LOGGED_IN_USER_INFO = `SELECT 
-    U.user_id AS user_id,
-    U.user_name AS user_name,
-    TO_CHAR(U.dob, 'DD/MM/YYYY') AS dob,
-    U.gender AS gender,
-    U.email_id AS email_id,
-    U.first_name AS first_name,
-    U.last_name AS last_name,
-    U.mobile_number AS mobile_number,
-    U.display_name AS display_name,
-    R.role_id AS role_id,
-    R.role_name AS role_name,
-    U.state_id AS state_id,
-    S.state_name AS state_name,
-    U.district_id AS district_id,
-    D.district_name AS district_name,
-    U.profile_pic_url
-FROM 
-    m_users U
-LEFT OUTER JOIN 
-    m_roles R 
-ON 
-    U.role_id = R.role_id
-LEFT OUTER JOIN m_states S
-    ON U.state_id = S.state_id
+  EXISTS_BY_MOBILE_NUMBER = `SELECT EXISTS(SELECT 1 FROM t_pledge_users WHERE mobile_number = $1) AS exists`,
 
-LEFT OUTER JOIN m_districts D
-    ON U.district_id = D.district_id
-WHERE 
-    U.user_id = $1 
-    AND U.status IN (1, 4)
-`,
-
-  UPDATE_PROFILE_PIC = `UPDATE m_users 
-                         SET profile_pic_url = $2, updated_by = $1, date_updated = NOW() 
-                         WHERE user_id = $1`,
-
-  UPDATE_PROFILE = `UPDATE m_users 
-                     SET first_name = $2, 
-                         last_name = $3, 
-                         email_id = $4, 
-                         dob = $5, 
-                         display_name = $6, 
-                         updated_by = $1, 
-                         date_updated = NOW() 
-                     WHERE user_id = $1`,
+  CREATE_USER = `INSERT INTO t_pledge_users (
+  full_name,
+  age, 
+  mobile_number, 
+  email_id, 
+  gender, 
+  state_id, 
+  district_id, 
+  pincode, 
+  status, 
+  date_created,
+  date_updated
+                 ) VALUES (
+                   $1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()
+                 ) RETURNING pledge_id`,
 }
